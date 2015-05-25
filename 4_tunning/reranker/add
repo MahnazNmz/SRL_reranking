@@ -1,0 +1,75 @@
+#!/usr/bin/env python
+import itertools
+import math
+import optparse
+import random
+import sys
+import string
+import bleu
+from collections import namedtuple
+
+optparser = optparse.OptionParser()
+optparser.add_option("-r", "--reference", dest="reference", default="w2_.txt", help="English reference sentences")
+optparser.add_option("-n", "--nbest", dest="nbest", default="data/train.nbest", help="N-best lists")
+optparser.add_option("-m", "--num-training-sentences", dest="m", default=sys.maxint, type="int", help="Number of training sentences (default=all)")
+optparser.add_option("-o", "--output", dest="out", default="data/train.nbest.new", help="output location")
+optparser.add_option("-x", "--xi", dest="xi", default=50, type="int", help="PRO training instances per input sentence (xi, default=50)")
+optparser.add_option("-e", "--eta", dest="eta", default=0.1, type="float", help="Perceptron learning rate (eta, default=0.1)")
+optparser.add_option("-a", "--alpha", dest="alpha", default=0.05, type="float", help="Sampler acceptance cutoff (alpha, default=0.05)")
+optparser.add_option("-i", "--epochs", dest="epochs", default=5, type="int", help="Perceptron epochs (default=10)")
+optparser.add_option("-s", "--random-seed", dest="seed", default="0", type="string", help="Random number seed (default='0')")
+(opts,_) = optparser.parse_args()
+
+ref = [line.strip().split() for line in open(opts.reference)][:opts.m]
+
+sys.stderr.write("Reading common words... ")
+
+dic = set()
+for line in ref:
+    dic.add(line[1] + line[2])
+
+sys.stderr.write(str(len(dic)) + "\n")
+
+sys.stderr.write("Reading N-best lists...")
+
+out = open(opts.out, "w")
+
+def short_word_count (sentence):
+    return str(-len(sentence.split()))
+
+def long_word_count (sentence):
+    return str(min(0, len(sentence.split()) - 50))
+
+def non_eng_count(sentence):
+    total = 0.0
+    punct = set(string.punctuation)
+    for word in sentence.split():
+        for c in word:
+            if not (c in punct or c.isspace() or c.isalnum()):
+                total += 1
+                break
+    return str(-total - 1)
+
+def rare_word(sentence):
+    total = 0.0
+    words = sentence.split()
+    for i in xrange(len(words)-1):
+        if words[i] + words[i+1] not in dic:
+            total += 1
+    return str(-total)
+    
+
+for n, line in enumerate(open(opts.nbest)):
+  (i, sentence, features) = line.strip().split("|||")
+  (i, features) = (i, [h for h in features.strip().split()])
+ 
+  features.append(rare_word(sentence))
+  features.append(non_eng_count(sentence))
+
+  out.write(" ||| ".join([i, sentence, " ".join(features)]) + "\n")
+
+  if n % 2000 == 0:
+    sys.stderr.write(".")
+sys.stderr.write("\n")
+
+out.close()

@@ -1,0 +1,1 @@
+./mahnaz-learn -r /home/mahnaz/MyDrive/Uni/Python/FeatureExtraction/get-Translation-File/NIST-changed.fa -n /home/mahnaz/Desktop/pipeline/Test\ Corpora/nbest-5000-withAlignment

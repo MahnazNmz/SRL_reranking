@@ -1,0 +1,2 @@
+mahnaz@mahnaz-Vostro-1320:~/MyDrive/Uni/Python/FeatureExtraction/get-Translation-File$ ~/MOSES/mosesdecoder-master/scripts/generic/multi-bleu.perl -lc /home/mahnaz/MyDrive/Uni/Python/FeatureExtraction/get-Translation-File/NIST.fa < /home/mahnaz/MyDrive/Uni/Python/FeatureExtraction/get-Translation-File/best_translation.fa &> BLEU1.out &
+
